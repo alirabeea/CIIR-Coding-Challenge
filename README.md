@@ -67,7 +67,7 @@ Core settings are loaded from environment variables or `.env`.
 | `REPORT_DIRECTORY` | Directory used for saved report snapshots | `reports` |
 | `RATE_LIMIT_REQUESTS` | Per-process request limit within the configured window | `120` |
 
-Performance and runtime tuning options are included in [.envexample](/Users/alirabeea/Documents/Personal/Projects/CIIR/agentic-search-challenge/.envexample).
+Performance and runtime tuning options are included in [.envexample](./.envexample).
 
 ## Running
 
@@ -228,7 +228,7 @@ Generated runtime directories such as `.cache/` and `reports/` are created autom
 
 ## Documentation
 
-Detailed implementation notes, runtime flow, technology stack, and component reference are available in [ARCHITECTURE.md](/Users/alirabeea/Documents/Personal/Projects/CIIR/agentic-search-challenge/ARCHITECTURE.md).
+Detailed implementation notes, runtime flow, technology stack, and component reference are available in [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## Operational Notes
 
