@@ -35,6 +35,18 @@ uvicorn app.main:app --reload
 
 The service is available at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
+## Tested Configuration
+
+The primary development and testing setup used:
+
+```bash
+SEARCH_PROVIDER=serpapi
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+OPENAI_MODEL=qwen/qwen3.6-plus:free
+```
+
+Search queries were run through SerpAPI, and extraction was run through OpenRouter using the model above.
+
 ## Configuration
 
 Core settings are loaded from environment variables or `.env`.
