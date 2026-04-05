@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: agentic-search
+    env: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: SEARCH_PROVIDER
+        value: serpapi
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini

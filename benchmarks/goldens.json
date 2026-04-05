@@ -1,0 +1,14 @@
+[
+  {
+    "query": "open source database tools",
+    "expected_names": ["Metabase", "Supabase", "Beekeeper Studio", "Adminer"]
+  },
+  {
+    "query": "AI startups in healthcare",
+    "expected_names": ["Abridge", "Hippocratic AI", "Ambience Healthcare"]
+  },
+  {
+    "query": "top pizza places in Brooklyn",
+    "expected_names": ["Lucali", "L'Industrie", "Juliana's"]
+  }
+]

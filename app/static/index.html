@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --bg-accent: #efe0cf;
+      --panel: rgba(255, 250, 245, 0.88);
+      --panel-strong: #fffaf4;
+      --line: rgba(88, 58, 36, 0.14);
+      --text: #1d140d;
+      --muted: #675647;
+      --muted-soft: #8e7b6c;
+      --brand: #ac4d28;
+      --brand-strong: #8f2f1d;
+      --brand-soft: rgba(172, 77, 40, 0.12);
+      --success: #1f6b4f;
+      --shadow: 0 24px 60px rgba(68, 40, 20, 0.12);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(232, 175, 115, 0.35), transparent 34%),
+        radial-gradient(circle at top right, rgba(128, 162, 129, 0.18), transparent 28%),
+        linear-gradient(180deg, #fbf6ef 0%, var(--bg) 46%, #efe8de 100%);
+      font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+      line-height: 1.45;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 36vw;
+      height: 36vw;
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+      opacity: 0.45;
+      z-index: 0;
+    }
+
+    body::before {
+      top: -12vw;
+      left: -8vw;
+      background: rgba(206, 138, 78, 0.18);
+    }
+
+    body::after {
+      right: -8vw;
+      bottom: -14vw;
+      background: rgba(94, 127, 109, 0.14);
+    }
+
+    a {
+      color: var(--brand-strong);
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 2px;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1280px, calc(100vw - 32px));
+      margin: 32px auto 40px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      right: -42px;
+      bottom: -42px;
+      width: 180px;
+      height: 180px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(172, 77, 40, 0.18), transparent 72%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--brand-strong);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: clamp(2.6rem, 5vw, 4.8rem);
+      line-height: 0.94;
+      letter-spacing: -0.03em;
+      max-width: 10ch;
+    }
+
+    .subhead {
+      max-width: 56ch;
+      color: var(--muted);
+      font-size: 16px;
+      margin-bottom: 22px;
+    }
+
+    .hero-points {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-point {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(88, 58, 36, 0.08);
+    }
+
+    .hero-point strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .hero-point span {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .search-panel {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted-soft);
+      margin: 0;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    input[type="text"],
+    select {
+      flex: 1;
+      min-width: 0;
+      padding: 15px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(88, 58, 36, 0.12);
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: rgba(172, 77, 40, 0.45);
+      box-shadow: 0 0 0 4px rgba(172, 77, 40, 0.12);
+    }
+
+    .inline-field {
+      display: grid;
+      gap: 6px;
+      min-width: 160px;
+    }
+
+    .inline-field span {
+      color: var(--muted-soft);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .button {
+      appearance: none;
+      border: none;
+      border-radius: 18px;
+      padding: 0 18px;
+      min-height: 54px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
+      color: #fffaf7;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      box-shadow: 0 16px 24px rgba(143, 47, 29, 0.18);
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+    }
+
+    .button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 20px 30px rgba(143, 47, 29, 0.22);
+    }
+
+    .button:disabled {
+      opacity: 0.7;
+      cursor: wait;
+      transform: none;
+    }
+
+    .button.secondary {
+      min-height: 42px;
+      padding: 0 14px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--text);
+      border: 1px solid rgba(88, 58, 36, 0.12);
+      box-shadow: none;
+    }
+
+    .button.secondary:hover:not(:disabled) {
+      box-shadow: none;
+      background: #fff;
+    }
+
+    .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      border: 1px solid rgba(88, 58, 36, 0.12);
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .chip:hover {
+      background: #fff;
+      border-color: rgba(172, 77, 40, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .status-panel {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .status-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 0 rgba(172, 77, 40, 0.3);
+    }
+
+    .status-panel.loading .status-dot {
+      animation: pulse 1.5s infinite;
+    }
+
+    .status-copy strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .status-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-side {
+      font-size: 13px;
+      color: var(--muted-soft);
+      text-align: right;
+    }
+
+    .progress-wrap {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(88, 58, 36, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--brand) 0%, #d58042 100%);
+      transition: width 220ms ease;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted-soft);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .results-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .compare-shell,
+    .reports-panel,
+    .shortlist-panel {
+      padding: 18px;
+    }
+
+    .compare-grid,
+    .report-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .compare-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .view-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .compare-card,
+    .report-item {
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(88, 58, 36, 0.1);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .compare-card h3,
+    .report-item strong {
+      margin: 0 0 8px;
+      display: block;
+      font-size: 17px;
+    }
+
+    .compare-row {
+      display: grid;
+      gap: 6px;
+      padding-top: 12px;
+      margin-top: 12px;
+      border-top: 1px solid rgba(88, 58, 36, 0.08);
+    }
+
+    .compare-row-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted-soft);
+    }
+
+    .report-links,
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .check-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .check-row input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--brand-strong);
+    }
+
+    .subtle-note {
+      color: var(--muted-soft);
+      font-size: 13px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.68);
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card .label {
+      display: block;
+      color: var(--muted-soft);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .summary-card .value {
+      display: block;
+      font-size: clamp(1.45rem, 2vw, 2rem);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .summary-card .hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .results-panel {
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .results-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .results-head-copy {
+      min-width: 0;
+    }
+
+    .results-head h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted-soft);
+    }
+
+    .results-note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .results-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .recent-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      padding: 14px 14px 16px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid rgba(88, 58, 36, 0.08);
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(252, 246, 240, 0.98);
+      color: var(--muted-soft);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      backdrop-filter: blur(10px);
+    }
+
+    th:first-child,
+    td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: rgba(255, 251, 247, 0.98);
+    }
+
+    th:first-child {
+      z-index: 3;
+    }
+
+    tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .entity-cell {
+      min-width: 240px;
+    }
+
+    .entity-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .entity-name {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .score-pill {
+      white-space: nowrap;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .cell-value {
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .cell-value a {
+      word-break: break-all;
+    }
+
+    .cell-inline-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .tiny-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(31, 107, 79, 0.1);
+      color: var(--success);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    details.sources {
+      border-left: 2px solid rgba(172, 77, 40, 0.18);
+      padding-left: 12px;
+    }
+
+    details.sources summary {
+      list-style: none;
+      cursor: pointer;
+      color: var(--brand-strong);
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    details.sources summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .citation-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .citation {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(88, 58, 36, 0.08);
+    }
+
+    .citation-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .cards-grid {
+      display: none;
+      gap: 14px;
+    }
+
+    .result-card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .result-card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .result-card p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .attribute-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .attribute {
+      padding-top: 12px;
+      border-top: 1px solid rgba(88, 58, 36, 0.08);
+    }
+
+    .attribute-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted-soft);
+    }
+
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+      border-radius: 22px;
+      border: 1px dashed rgba(88, 58, 36, 0.18);
+      background: rgba(255, 255, 255, 0.44);
+    }
+
+    .skeleton {
+      display: grid;
+      gap: 12px;
+    }
+
+    .skeleton-card {
+      height: 84px;
+      border-radius: 18px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.92) 50%, rgba(255,255,255,0.45) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite linear;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(172, 77, 40, 0.28); }
+      70% { box-shadow: 0 0 0 14px rgba(172, 77, 40, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(172, 77, 40, 0); }
+    }
+
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to { background-position: -200% 0; }
+    }
+
+    @media (max-width: 1080px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-points,
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 780px) {
+      .shell {
+        width: min(100vw - 20px, 100%);
+        margin-top: 20px;
+      }
+
+      .hero-copy,
+      .search-panel,
+      .status-panel,
+      .results-panel {
+        padding: 18px;
+      }
+
+      h1 {
+        max-width: none;
+        font-size: clamp(2.3rem, 13vw, 3.2rem);
+      }
+
+      .hero-points,
+      .summary-grid,
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+
+      .search-row {
+        display: grid;
+      }
+
+      .status-panel {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status-side {
+        text-align: left;
+      }
+
+      .table-wrap {
+        display: none;
+      }
+
+      .cards-grid {
+        display: grid;
+      }
+
+      .results-actions {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <article class="panel hero-copy">
+        <div class="eyebrow">Agentic entity discovery</div>
+        <h1>Search the web and turn messy pages into traceable research.</h1>
+        <p class="subhead">Run a topic query, scrape the strongest sources, extract comparable entities, and keep every useful value tied back to evidence.</p>
+        <div class="hero-points">
+          <div class="hero-point">
+            <strong>Faster passes</strong>
+            <span>Shared clients, chunk prioritization, and caching cut repeated work.</span>
+          </div>
+          <div class="hero-point">
+            <strong>Readable output</strong>
+            <span>High-signal summaries first, citations tucked underneath instead of flooding the page.</span>
+          </div>
+          <div class="hero-point">
+            <strong>Source grounded</strong>
+            <span>Every meaningful cell stays inspectable, so the table still feels audit-friendly.</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel search-panel">
+        <p class="panel-title">Run a topic</p>
+        <form id="search-form">
+          <label class="visually-hidden" for="query">Search query</label>
+          <div class="search-row">
+            <input id="query" type="text" placeholder="Try: AI startups in healthcare" value="AI startups in healthcare" autocomplete="off" />
+            <button id="submit-btn" class="button" type="submit">Run search</button>
+          </div>
+          <div class="toggle-row" aria-label="Advanced options">
+            <label class="inline-field" for="run-mode">
+              <span>Mode</span>
+              <select id="run-mode">
+                <option value="fast">Fast</option>
+                <option value="balanced" selected>Balanced</option>
+                <option value="deep">Deep</option>
+              </select>
+            </label>
+            <label class="check-row" for="prefer-live">
+              <input id="prefer-live" type="checkbox" />
+              <span>Fresh run</span>
+            </label>
+            <label class="check-row" for="debug-mode">
+              <input id="debug-mode" type="checkbox" />
+              <span>Include debug payload</span>
+            </label>
+          </div>
+          <div class="subtle-note">Fresh runs bypass the query cache and are best for demos when you want to show the live pipeline.</div>
+        </form>
+        <div>
+          <p class="panel-title">Good prompts</p>
+          <div id="examples" class="examples"></div>
+        </div>
+        <div id="recent-wrap" class="recent-wrap" hidden>
+          <p class="panel-title">Recent searches</p>
+          <div id="recent" class="examples"></div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="status-panel" class="panel status-panel">
+      <div class="status-main">
+        <div class="status-dot"></div>
+        <div class="status-copy">
+          <strong>Ready for a query</strong>
+          <span>Pick a sample or type your own topic to start the pipeline.</span>
+        </div>
+      </div>
+      <div id="status-side" class="status-side">Tip: shorter topical queries usually resolve faster.</div>
+      <div class="progress-wrap" aria-live="polite">
+        <div class="progress-track" aria-hidden="true">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <div class="progress-meta">
+          <span id="progress-stage">Idle</span>
+          <span id="progress-percent">0%</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="results-shell">
+      <div id="meta" class="summary-grid"></div>
+      <div id="shortlist-panel" class="panel shortlist-panel" hidden>
+        <div class="results-head">
+          <div class="results-head-copy">
+            <h2>Shortlist</h2>
+            <div id="shortlist-note" class="results-note">Pin entities to keep a quick shortlist while browsing results.</div>
+          </div>
+        </div>
+        <div id="shortlist-results">
+          <div class="empty">Pinned entities will appear here.</div>
+        </div>
+      </div>
+      <div id="compare-panel" class="panel compare-shell" hidden>
+        <div class="results-head">
+          <div class="results-head-copy">
+            <h2>Comparison</h2>
+            <div id="compare-note" class="results-note">Select up to two entities to compare their fields side by side.</div>
+          </div>
+        </div>
+        <div id="compare-results">
+          <div class="empty">Comparison cards will appear here.</div>
+        </div>
+      </div>
+      <div id="reports-panel" class="panel reports-panel" hidden>
+        <div class="results-head">
+          <div class="results-head-copy">
+            <h2>Saved Reports</h2>
+            <div class="results-note">Recent snapshots generated by the app.</div>
+          </div>
+        </div>
+        <div id="reports-list" class="report-list"></div>
+      </div>
+      <div class="panel results-panel">
+        <div class="results-head">
+          <div class="results-head-copy">
+            <h2>Results</h2>
+            <div id="results-note" class="results-note">Nothing run yet.</div>
+          </div>
+          <div id="results-actions" class="results-actions" hidden>
+            <button id="download-csv-btn" class="button secondary" type="button">Download CSV</button>
+            <button id="download-md-btn" class="button secondary" type="button">Download Report</button>
+            <button id="copy-api-btn" class="button secondary" type="button">Copy API URL</button>
+            <button id="copy-share-btn" class="button secondary" type="button">Copy Share Link</button>
+          </div>
+        </div>
+        <div class="view-controls">
+          <label class="inline-field" for="result-filter">
+            <span>Filter</span>
+            <input id="result-filter" type="text" placeholder="Search entity names or fields" />
+          </label>
+          <label class="inline-field" for="sort-mode">
+            <span>Sort</span>
+            <select id="sort-mode">
+              <option value="score">Score</option>
+              <option value="confidence">Confidence</option>
+              <option value="freshness">Freshness</option>
+              <option value="name">Name</option>
+            </select>
+          </label>
+          <label class="inline-field" for="source-filter">
+            <span>Source Kind</span>
+            <select id="source-filter">
+              <option value="">All</option>
+              <option value="official_site">Official</option>
+              <option value="search_result">Search result</option>
+            </select>
+          </label>
+        </div>
+        <div id="results">
+          <div class="empty">Search results will appear here with table and mobile card views.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('search-form');
+    const queryInput = document.getElementById('query');
+    const submitBtn = document.getElementById('submit-btn');
+    const preferLiveInput = document.getElementById('prefer-live');
+    const debugModeInput = document.getElementById('debug-mode');
+    const runModeInput = document.getElementById('run-mode');
+    const metaEl = document.getElementById('meta');
+    const resultsEl = document.getElementById('results');
+    const resultsNoteEl = document.getElementById('results-note');
+    const statusPanelEl = document.getElementById('status-panel');
+    const statusSideEl = document.getElementById('status-side');
+    const progressFillEl = document.getElementById('progress-fill');
+    const progressStageEl = document.getElementById('progress-stage');
+    const progressPercentEl = document.getElementById('progress-percent');
+    const examplesEl = document.getElementById('examples');
+    const recentWrapEl = document.getElementById('recent-wrap');
+    const recentEl = document.getElementById('recent');
+    const resultsActionsEl = document.getElementById('results-actions');
+    const downloadCsvBtn = document.getElementById('download-csv-btn');
+    const downloadMdBtn = document.getElementById('download-md-btn');
+    const copyApiBtn = document.getElementById('copy-api-btn');
+    const copyShareBtn = document.getElementById('copy-share-btn');
+    const comparePanelEl = document.getElementById('compare-panel');
+    const compareNoteEl = document.getElementById('compare-note');
+    const compareResultsEl = document.getElementById('compare-results');
+    const shortlistPanelEl = document.getElementById('shortlist-panel');
+    const shortlistNoteEl = document.getElementById('shortlist-note');
+    const shortlistResultsEl = document.getElementById('shortlist-results');
+    const reportsPanelEl = document.getElementById('reports-panel');
+    const reportsListEl = document.getElementById('reports-list');
+    const resultFilterInput = document.getElementById('result-filter');
+    const sortModeInput = document.getElementById('sort-mode');
+    const sourceFilterInput = document.getElementById('source-filter');
+
+    const exampleQueries = [
+      'AI startups in healthcare',
+      'top pizza places in Brooklyn',
+      'open source database tools',
+      'developer observability startups',
+      'open source feature flag tools',
+      'YC companies building AI coding tools'
+    ];
+
+    const sessionCache = new Map();
+    const recentSearchesKey = 'agentic-search-recent-queries';
+    const shortlistKey = 'agentic-search-shortlist';
+    let activeQuery = '';
+    let activeJobId = '';
+    let latestData = null;
+    let activeComparison = [];
+    let activeRunOptions = { debug: false, preferLive: false, runMode: 'balanced' };
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatMs(value) {
+      if (!value && value !== 0) return '—';
+      if (value < 1000) return `${value} ms`;
+      return `${(value / 1000).toFixed(2)} s`;
+    }
+
+    function titleCase(value) {
+      return String(value || '')
+        .split('_')
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+    }
+
+    function shortenQuote(value, maxLength = 210) {
+      const clean = String(value || '').trim();
+      if (clean.length <= maxLength) return clean;
+      return `${clean.slice(0, maxLength - 1).trimEnd()}…`;
+    }
+
+    function shortlistForQuery(query) {
+      try {
+        const store = JSON.parse(window.localStorage.getItem(shortlistKey) || '{}');
+        return Array.isArray(store[query.toLowerCase()]) ? store[query.toLowerCase()] : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function persistShortlist(query, ids) {
+      try {
+        const store = JSON.parse(window.localStorage.getItem(shortlistKey) || '{}');
+        store[query.toLowerCase()] = ids.slice(0, 6);
+        window.localStorage.setItem(shortlistKey, JSON.stringify(store));
+      } catch {
+      }
+    }
+
+    function stageLabel(stage) {
+      const labels = {
+        idle: 'Idle',
+        cache: 'Cache',
+        queued: 'Queued',
+        starting: 'Starting',
+        search: 'Search',
+        rerank: 'Rerank',
+        scrape: 'Scrape',
+        extract: 'Extract',
+        merge: 'Merge',
+        completed: 'Done',
+        failed: 'Failed'
+      };
+      return labels[stage] || titleCase(stage);
+    }
+
+    function updateProgress(progress = 0, stage = 'idle') {
+      const percent = Math.max(0, Math.min(100, Math.round((progress || 0) * 100)));
+      progressFillEl.style.width = `${percent}%`;
+      progressPercentEl.textContent = `${percent}%`;
+      progressStageEl.textContent = stageLabel(stage);
+    }
+
+    function renderSourceList(sources) {
+      if (!sources || !sources.length) return '';
+      const label = sources.length === 1 ? '1 source' : `${sources.length} sources`;
+      const items = sources.map(src => {
+        const title = escapeHtml(src.source_title || src.source_url);
+        const url = escapeHtml(src.source_url || '#');
+        const quote = escapeHtml(shortenQuote(src.quote || ''));
+        return `
+          <div class="citation">
+            <div class="citation-title"><a href="${url}" target="_blank" rel="noreferrer">${title}</a></div>
+            <div>${quote ? `“${quote}”` : 'No quote provided.'}</div>
+          </div>
+        `;
+      }).join('');
+      return `
+        <details class="sources">
+          <summary>Inspect ${label}</summary>
+          <div class="citation-list">${items}</div>
+        </details>
+      `;
+    }
+
+    function renderCell(cell, options = {}) {
+      if (!cell || !cell.value) return '<span class="results-note">—</span>';
+      const rawValue = String(cell.value);
+      const safeValue = escapeHtml(rawValue);
+      const isLink = /^https?:\/\//i.test(rawValue);
+      const valueHtml = isLink
+        ? `<a href="${safeValue}" target="_blank" rel="noreferrer">${safeValue}</a>`
+        : safeValue;
+      const compactMeta = options.compactMeta && cell.sources && cell.sources.length
+        ? `<div class="cell-inline-meta"><span class="tiny-badge">${cell.sources.length} ${cell.sources.length === 1 ? 'source' : 'sources'}</span></div>`
+        : '';
+      return `<div class="cell-value">${valueHtml}</div>${compactMeta}${renderSourceList(cell.sources || [])}`;
+    }
+
+    function compareButton(row) {
+      const selected = activeComparison.includes(row.entity_id);
+      return `<button type="button" class="button secondary" data-compare-id="${escapeHtml(row.entity_id)}">${selected ? 'Selected' : 'Compare'}</button>`;
+    }
+
+    function pinButton(row) {
+      const pinned = shortlistForQuery(activeQuery).includes(row.entity_id);
+      return `<button type="button" class="button secondary" data-pin-id="${escapeHtml(row.entity_id)}">${pinned ? 'Pinned' : 'Pin'}</button>`;
+    }
+
+    function rowMatchesFilters(row) {
+      const filterText = resultFilterInput.value.trim().toLowerCase();
+      const sourceKind = sourceFilterInput.value;
+      if (sourceKind) {
+        const kindValue = row.attributes?.source_kind?.value || '';
+        if (kindValue !== sourceKind) return false;
+      }
+      if (!filterText) return true;
+      const haystack = [
+        row.name?.value,
+        row.entity_type?.value,
+        row.summary?.value,
+        row.rank_explanation,
+        ...(Object.values(row.attributes || {}).map(cell => cell.value))
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(filterText);
+    }
+
+    function sortedRows(rows) {
+      const mode = sortModeInput.value;
+      const next = [...rows].filter(rowMatchesFilters);
+      if (mode === 'confidence') {
+        next.sort((a, b) => (b.confidence_score || 0) - (a.confidence_score || 0));
+      } else if (mode === 'freshness') {
+        next.sort((a, b) => {
+          const left = a.freshness_days ?? Number.MAX_SAFE_INTEGER;
+          const right = b.freshness_days ?? Number.MAX_SAFE_INTEGER;
+          return left - right;
+        });
+      } else if (mode === 'name') {
+        next.sort((a, b) => String(a.name?.value || '').localeCompare(String(b.name?.value || '')));
+      } else {
+        next.sort((a, b) => (b.aggregate_score || 0) - (a.aggregate_score || 0));
+      }
+      return next;
+    }
+
+    function renderDesktopTable(data) {
+      const columns = data.columns || [];
+      const rows = data.rows || [];
+      if (!rows.length) return '';
+
+      const header = columns.map(col => `<th>${escapeHtml(titleCase(col))}</th>`).join('');
+      const body = rows.map(row => {
+        const highlightMarkup = (row.highlights || [])
+          .slice(0, 2)
+          .map(item => `<span class="tiny-badge">${escapeHtml(item)}</span>`)
+          .join('');
+        const cells = columns.map(col => {
+          if (col === 'name') {
+            return `
+              <td class="entity-cell">
+                <div class="entity-header">
+                  <div class="entity-name">${escapeHtml(row.name?.value || 'Unknown')}</div>
+                  <span class="score-pill">${Math.round((row.aggregate_score || 0) * 100)} score</span>
+                </div>
+                <div class="cell-inline-meta">
+                  <span class="tiny-badge">${row.supporting_source_count || 0} domains</span>
+                  <span class="tiny-badge">${Math.round((row.confidence_score || 0) * 100)} confidence</span>
+                  <span class="tiny-badge">${escapeHtml(row.verification_status || 'unverified')}</span>
+                  ${highlightMarkup}
+                </div>
+                <div class="cell-inline-meta">${compareButton(row)} ${pinButton(row)}</div>
+                ${row.rank_explanation ? `<div class="results-note">${escapeHtml(row.rank_explanation)}</div>` : ''}
+                ${renderSourceList((row.name && row.name.sources) || [])}
+              </td>
+            `;
+          }
+
+          const fixed = {
+            entity_type: row.entity_type,
+            summary: row.summary,
+            homepage: row.homepage
+          };
+          const cell = fixed[col] || (row.attributes ? row.attributes[col] : null);
+          return `<td>${renderCell(cell, { compactMeta: true })}</td>`;
+        }).join('');
+
+        return `<tr>${cells}</tr>`;
+      }).join('');
+
+      return `<div class="table-wrap"><table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
+    function renderMobileCards(data) {
+      const columns = data.columns || [];
+      const rows = data.rows || [];
+      const attributeColumns = columns.filter(col => !['name', 'entity_type', 'summary', 'homepage'].includes(col));
+      const cards = rows.map(row => {
+        const attributeMarkup = attributeColumns
+          .map(col => ({ name: col, cell: row.attributes ? row.attributes[col] : null }))
+          .filter(item => item.cell && item.cell.value)
+          .slice(0, 6)
+          .map(item => `
+            <div class="attribute">
+              <span class="attribute-label">${escapeHtml(titleCase(item.name))}</span>
+              ${renderCell(item.cell)}
+            </div>
+          `)
+          .join('');
+
+        return `
+          <article class="result-card">
+            <div class="entity-header">
+              <h3>${escapeHtml(row.name?.value || 'Unknown')}</h3>
+              <span class="score-pill">${Math.round((row.aggregate_score || 0) * 100)}</span>
+            </div>
+            <div class="card-meta">
+              <span class="tiny-badge">${row.entity_type?.value ? escapeHtml(row.entity_type.value) : 'Unknown type'}</span>
+              <span class="tiny-badge">${row.supporting_source_count || 0} domains</span>
+              <span class="tiny-badge">${Math.round((row.confidence_score || 0) * 100)} confidence</span>
+              <span class="tiny-badge">${escapeHtml(row.verification_status || 'unverified')}</span>
+            </div>
+            <div class="cell-inline-meta">${compareButton(row)} ${pinButton(row)}</div>
+            ${row.rank_explanation ? `<div class="results-note">${escapeHtml(row.rank_explanation)}</div>` : ''}
+            <p>${escapeHtml(row.summary?.value || 'No summary available.')}</p>
+            ${row.homepage ? renderCell(row.homepage) : ''}
+            <div class="attribute-grid">${attributeMarkup || '<div class="results-note">No extra attributes extracted for this entity.</div>'}</div>
+          </article>
+        `;
+      }).join('');
+
+      return `<div class="cards-grid">${cards}</div>`;
+    }
+
+    function renderSummary(data) {
+      const metrics = data.metrics || {};
+      const cards = [
+        {
+          label: 'Entities',
+          value: data.rows?.length || 0,
+          hint: 'Merged and ranked entities'
+        },
+        {
+          label: 'Query Type',
+          value: titleCase(data.query_type || 'general'),
+          hint: `${titleCase(data.run_mode || 'balanced')} mode${data.desired_row_count ? ` targeting ~${data.desired_row_count} rows` : ''}`
+        },
+        {
+          label: 'Sources',
+          value: data.raw_sources_considered || 0,
+          hint: `${metrics.hits_returned || 0} search hits survived filtering`
+        },
+        {
+          label: 'Latency',
+          value: formatMs(metrics.total_ms || 0),
+          hint: metrics.cache_hit ? 'Served from query cache' : `${formatMs(metrics.extract_ms || 0)} spent in extraction, ${formatMs(metrics.verify_ms || 0)} verifying`
+        },
+        {
+          label: 'Cache Tier',
+          value: titleCase(metrics.cache_tier || 'live'),
+          hint: metrics.cache_hit ? 'Response reused from cache' : 'Fresh pipeline execution'
+        },
+        {
+          label: 'Recovery',
+          value: metrics.fallback_rows_added || 0,
+          hint: metrics.fallback_rows_added ? 'Rows added by heuristic fallback' : 'No fallback augmentation needed'
+        },
+        {
+          label: 'LLM Chunks',
+          value: metrics.chunks_processed || 0,
+          hint: 'Relevant chunks sent for extraction'
+        }
+      ];
+
+      metaEl.innerHTML = cards.map(card => `
+        <div class="summary-card">
+          <span class="label">${escapeHtml(card.label)}</span>
+          <span class="value">${escapeHtml(card.value)}</span>
+          <span class="hint">${escapeHtml(card.hint)}</span>
+        </div>
+      `).join('');
+    }
+
+    function comparisonRowsForEntity(entity, data) {
+      const fields = ['entity_type', 'summary', 'homepage', ...(data.comparison_fields || [])];
+      return [...new Set(fields)]
+        .map(field => {
+          const cell = field === 'entity_type' ? entity.entity_type
+            : field === 'summary' ? entity.summary
+            : field === 'homepage' ? entity.homepage
+            : entity.attributes?.[field];
+          if (!cell || !cell.value) return '';
+          return `
+            <div class="compare-row">
+              <span class="compare-row-label">${escapeHtml(titleCase(field))}</span>
+              ${renderCell(cell)}
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    function renderComparison() {
+      const rows = latestData?.rows || [];
+      if (!rows.length || !activeComparison.length) {
+        comparePanelEl.hidden = true;
+        compareResultsEl.innerHTML = '<div class="empty">Comparison cards will appear here.</div>';
+        return;
+      }
+
+      const selectedRows = activeComparison
+        .map(entityId => rows.find(row => row.entity_id === entityId))
+        .filter(Boolean)
+        .slice(0, 2);
+
+      if (!selectedRows.length) {
+        comparePanelEl.hidden = true;
+        return;
+      }
+
+      comparePanelEl.hidden = false;
+      compareNoteEl.textContent = selectedRows.length === 1
+        ? 'Select one more entity to complete the side-by-side comparison.'
+        : 'Comparing the strongest fields and evidence across the selected entities.';
+      compareResultsEl.innerHTML = `
+        <div class="compare-grid">
+          ${selectedRows.map(row => `
+            <article class="compare-card">
+              <h3>${escapeHtml(row.name?.value || 'Unknown')}</h3>
+              <div class="cell-inline-meta">
+                <span class="tiny-badge">${Math.round((row.aggregate_score || 0) * 100)} score</span>
+                <span class="tiny-badge">${Math.round((row.confidence_score || 0) * 100)} confidence</span>
+                <span class="tiny-badge">${row.supporting_source_count || 0} domains</span>
+              </div>
+              ${comparisonRowsForEntity(row, latestData)}
+            </article>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderShortlist() {
+      const rows = latestData?.rows || [];
+      const pinnedIds = shortlistForQuery(activeQuery);
+      const pinnedRows = pinnedIds
+        .map(entityId => rows.find(row => row.entity_id === entityId))
+        .filter(Boolean);
+      if (!pinnedRows.length) {
+        shortlistPanelEl.hidden = true;
+        shortlistResultsEl.innerHTML = '<div class="empty">Pinned entities will appear here.</div>';
+        return;
+      }
+
+      shortlistPanelEl.hidden = false;
+      shortlistNoteEl.textContent = `Pinned ${pinnedRows.length} ${pinnedRows.length === 1 ? 'entity' : 'entities'} for quick review.`;
+      shortlistResultsEl.innerHTML = `
+        <div class="compare-grid">
+          ${pinnedRows.map(row => `
+            <article class="compare-card">
+              <h3>${escapeHtml(row.name?.value || 'Unknown')}</h3>
+              <div class="cell-inline-meta">
+                <span class="tiny-badge">${Math.round((row.aggregate_score || 0) * 100)} score</span>
+                <span class="tiny-badge">${escapeHtml(row.verification_status || 'unverified')}</span>
+              </div>
+              ${row.rank_explanation ? `<div class="results-note">${escapeHtml(row.rank_explanation)}</div>` : ''}
+              ${comparisonRowsForEntity(row, latestData)}
+            </article>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderResults(data, note) {
+      const rows = sortedRows(data.rows || []);
+      latestData = data;
+      renderSummary(data);
+      resultsActionsEl.hidden = !activeQuery;
+
+      if (!rows.length) {
+        resultsNoteEl.textContent = note || 'No rows returned.';
+        resultsEl.innerHTML = '<div class="empty">No rows returned for this query. Try narrowing the topic or switching to a different phrasing.</div>';
+        renderShortlist();
+        renderComparison();
+        return;
+      }
+
+      resultsNoteEl.textContent = note || `Showing ${rows.length} ranked entities with traceable cells.`;
+      const renderedData = { ...data, rows };
+      resultsEl.innerHTML = `${renderDesktopTable(renderedData)}${renderMobileCards(renderedData)}`;
+      renderShortlist();
+      renderComparison();
+    }
+
+    function renderSkeleton() {
+      metaEl.innerHTML = '';
+      resultsNoteEl.textContent = 'Fetching search results, scraping pages, and extracting entities...';
+      resultsActionsEl.hidden = true;
+      shortlistPanelEl.hidden = true;
+      comparePanelEl.hidden = true;
+      resultsEl.innerHTML = `
+        <div class="skeleton">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      `;
+    }
+
+    function updateStatus(state, title, detail, side = '') {
+      statusPanelEl.classList.toggle('loading', state === 'loading');
+      statusPanelEl.querySelector('.status-copy strong').textContent = title;
+      statusPanelEl.querySelector('.status-copy span').textContent = detail;
+      statusSideEl.textContent = side;
+    }
+
+    function buildApiUrl(query, format = 'json', options = {}) {
+      const base = format === 'csv'
+        ? '/api/search.csv'
+        : format === 'markdown'
+          ? '/api/search.md'
+          : '/api/search';
+      const url = new URL(base, window.location.origin);
+      url.searchParams.set('query', query);
+      if (options.debug) url.searchParams.set('debug', 'true');
+      if (options.preferLive) url.searchParams.set('prefer_live', 'true');
+      if (options.runMode) url.searchParams.set('run_mode', options.runMode);
+      return url;
+    }
+
+    function buildJobUrl(query, options = {}) {
+      const url = new URL('/api/jobs', window.location.origin);
+      url.searchParams.set('query', query);
+      if (options.debug) url.searchParams.set('debug', 'true');
+      if (options.preferLive) url.searchParams.set('prefer_live', 'true');
+      if (options.runMode) url.searchParams.set('run_mode', options.runMode);
+      return url;
+    }
+
+    function buildShareUrl(query) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('query', query);
+      if (runModeInput.value) {
+        url.searchParams.set('run_mode', runModeInput.value);
+      }
+      return url.toString();
+    }
+
+    function updateUrlState(query) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('query', query);
+      if (runModeInput.value) {
+        url.searchParams.set('run_mode', runModeInput.value);
+      }
+      window.history.replaceState({}, '', url);
+    }
+
+    function getRecentQueries() {
+      try {
+        return JSON.parse(window.localStorage.getItem(recentSearchesKey) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function persistRecentQuery(query) {
+      const recent = getRecentQueries().filter(item => item.toLowerCase() !== query.toLowerCase());
+      recent.unshift(query);
+      window.localStorage.setItem(recentSearchesKey, JSON.stringify(recent.slice(0, 6)));
+      renderRecentQueries();
+    }
+
+    function renderRecentQueries() {
+      const recent = getRecentQueries();
+      recentWrapEl.hidden = recent.length === 0;
+      recentEl.innerHTML = recent
+        .map(query => `<button type="button" class="chip" data-recent-query="${escapeHtml(query)}">${escapeHtml(query)}</button>`)
+        .join('');
+    }
+
+    async function copyText(text, message) {
+      try {
+        await navigator.clipboard.writeText(text);
+        statusSideEl.textContent = message;
+      } catch {
+        statusSideEl.textContent = 'Clipboard access was unavailable.';
+      }
+    }
+
+    function renderReports(reports) {
+      reportsPanelEl.hidden = !reports.length;
+      reportsListEl.innerHTML = reports.map(report => `
+        <article class="report-item">
+          <strong>${escapeHtml(report.title || report.query)}</strong>
+          <div class="cell-inline-meta">
+            <span class="tiny-badge">${escapeHtml(titleCase(report.query_type || 'general'))}</span>
+            <span class="tiny-badge">${escapeHtml(titleCase(report.run_mode || 'balanced'))}</span>
+            <span class="tiny-badge">${escapeHtml(report.entity_count)} entities</span>
+            <span class="tiny-badge">${escapeHtml(report.created_at)}</span>
+          </div>
+          <div class="report-links">
+            <a class="button secondary" href="${escapeHtml(report.markdown_url)}" target="_blank" rel="noreferrer">Open Markdown</a>
+            <a class="button secondary" href="${escapeHtml(report.json_url)}" target="_blank" rel="noreferrer">Open JSON</a>
+            <button type="button" class="button secondary" data-report-query="${escapeHtml(report.query)}" data-report-run-mode="${escapeHtml(report.run_mode || 'balanced')}">Run Again</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function loadReports() {
+      try {
+        const response = await fetch('/api/reports?limit=6');
+        if (!response.ok) return;
+        const data = await response.json();
+        renderReports(data || []);
+      } catch {
+        reportsPanelEl.hidden = true;
+      }
+    }
+
+    async function pollJob(jobId) {
+      while (activeJobId === jobId) {
+        const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || 'Job lookup failed');
+        }
+
+        updateProgress(data.progress || 0, data.stage || 'queued');
+        if (data.status === 'failed') {
+          throw new Error(data.error || 'Search job failed');
+        }
+
+        if (data.status === 'completed' && data.result) {
+          return data.result;
+        }
+
+        updateStatus(
+          'loading',
+          `${stageLabel(data.stage)} in progress`,
+          data.message || 'The pipeline is still working through this query.',
+          `Job ${jobId.slice(0, 8)} • ${Math.round((data.progress || 0) * 100)}%`
+        );
+        await new Promise(resolve => window.setTimeout(resolve, 900));
+      }
+      throw new Error('Search was cancelled.');
+    }
+
+    async function runSearch(query) {
+      const options = {
+        debug: debugModeInput.checked,
+        preferLive: preferLiveInput.checked,
+        runMode: runModeInput.value
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Running...';
+      activeQuery = query;
+      activeRunOptions = options;
+      activeComparison = [];
+      updateUrlState(query);
+
+      const cached = sessionCache.get(query.toLowerCase());
+      if (cached) {
+        renderResults(cached, 'Showing cached results while the job refreshes them in the background...');
+        updateStatus('loading', 'Refreshing results', 'The previous response is visible while a new job runs.', 'Warm queries should feel much faster now.');
+      } else {
+        renderSkeleton();
+        updateStatus('loading', 'Queueing background job', 'Preparing a non-blocking search run so progress stays visible.', 'The first uncached run is usually the slowest.');
+      }
+      updateProgress(0.04, 'queued');
+
+      try {
+        const createResponse = await fetch(buildJobUrl(query, options), { method: 'POST' });
+        const job = await createResponse.json();
+        if (!createResponse.ok) throw new Error(job.detail || 'Could not create job');
+
+        activeJobId = job.job_id;
+        if (job.preview_result) {
+          renderResults(job.preview_result, 'Showing a cached preview while the live run continues...');
+        }
+        updateStatus('loading', 'Background job started', 'Polling live progress while the pipeline runs.', `Job ${job.job_id.slice(0, 8)} is active.`);
+
+        const data = await pollJob(job.job_id);
+        sessionCache.set(query.toLowerCase(), data);
+        persistRecentQuery(query);
+        renderResults(data);
+        await loadReports();
+
+        const metrics = data.metrics || {};
+        const side = metrics.cache_hit
+          ? `Served from ${metrics.cache_tier || 'cache'}.`
+          : `${formatMs(metrics.search_ms || 0)} search, ${formatMs(metrics.scrape_ms || 0)} scrape, ${formatMs(metrics.extract_ms || 0)} extract.`;
+        updateStatus(
+          'done',
+          'Search complete',
+          `Returned ${data.rows?.length || 0} entities from ${data.raw_sources_considered || 0} sources in ${formatMs(metrics.total_ms || 0)}.`,
+          side
+        );
+        updateProgress(1, 'completed');
+      } catch (error) {
+        metaEl.innerHTML = '';
+        resultsNoteEl.textContent = 'The request failed.';
+        resultsActionsEl.hidden = true;
+        comparePanelEl.hidden = true;
+        resultsEl.innerHTML = `<div class="empty">Error: ${escapeHtml(error.message || 'Unknown error')}</div>`;
+        updateStatus('error', 'Request failed', 'The pipeline could not complete this query.', 'Check API keys, rate limits, or network access if this keeps happening.');
+        updateProgress(1, 'failed');
+      } finally {
+        activeJobId = '';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Run search';
+      }
+    }
+
+    examplesEl.innerHTML = exampleQueries
+      .map(query => `<button type="button" class="chip" data-query="${escapeHtml(query)}">${escapeHtml(query)}</button>`)
+      .join('');
+
+    examplesEl.addEventListener('click', event => {
+      const button = event.target.closest('[data-query]');
+      if (!button) return;
+      queryInput.value = button.getAttribute('data-query') || '';
+      runSearch(queryInput.value.trim());
+    });
+
+    recentEl.addEventListener('click', event => {
+      const button = event.target.closest('[data-recent-query]');
+      if (!button) return;
+      queryInput.value = button.getAttribute('data-recent-query') || '';
+      runSearch(queryInput.value.trim());
+    });
+
+    resultsEl.addEventListener('click', event => {
+      const button = event.target.closest('[data-compare-id]');
+      if (button) {
+        const entityId = button.getAttribute('data-compare-id');
+        if (!entityId) return;
+
+        if (activeComparison.includes(entityId)) {
+          activeComparison = activeComparison.filter(item => item !== entityId);
+        } else {
+          activeComparison = [...activeComparison, entityId].slice(-2);
+        }
+
+        if (latestData) {
+          renderResults(latestData, resultsNoteEl.textContent);
+        }
+        return;
+      }
+
+      const pin = event.target.closest('[data-pin-id]');
+      if (!pin) return;
+      const entityId = pin.getAttribute('data-pin-id');
+      if (!entityId) return;
+
+      const shortlist = shortlistForQuery(activeQuery);
+      if (shortlist.includes(entityId)) {
+        persistShortlist(activeQuery, shortlist.filter(item => item !== entityId));
+      } else {
+        persistShortlist(activeQuery, [...shortlist, entityId]);
+      }
+
+      if (latestData) {
+        renderResults(latestData, resultsNoteEl.textContent);
+      }
+    });
+
+    reportsListEl.addEventListener('click', event => {
+      const button = event.target.closest('[data-report-query]');
+      if (!button) return;
+      queryInput.value = button.getAttribute('data-report-query') || '';
+      runModeInput.value = button.getAttribute('data-report-run-mode') || 'balanced';
+      runSearch(queryInput.value.trim());
+    });
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const query = queryInput.value.trim();
+      if (!query) return;
+      runSearch(query);
+    });
+
+    resultFilterInput.addEventListener('input', () => {
+      if (latestData) renderResults(latestData, resultsNoteEl.textContent);
+    });
+
+    sortModeInput.addEventListener('change', () => {
+      if (latestData) renderResults(latestData, resultsNoteEl.textContent);
+    });
+
+    sourceFilterInput.addEventListener('change', () => {
+      if (latestData) renderResults(latestData, resultsNoteEl.textContent);
+    });
+
+    downloadCsvBtn.addEventListener('click', () => {
+      if (!activeQuery) return;
+      window.open(buildApiUrl(activeQuery, 'csv', activeRunOptions).toString(), '_blank', 'noopener');
+    });
+
+    downloadMdBtn.addEventListener('click', () => {
+      if (!activeQuery) return;
+      window.open(buildApiUrl(activeQuery, 'markdown', activeRunOptions).toString(), '_blank', 'noopener');
+    });
+
+    copyApiBtn.addEventListener('click', () => {
+      if (!activeQuery) return;
+      copyText(buildApiUrl(activeQuery, 'json', activeRunOptions).toString(), 'API URL copied.');
+    });
+
+    copyShareBtn.addEventListener('click', () => {
+      if (!activeQuery) return;
+      copyText(buildShareUrl(activeQuery), 'Share link copied.');
+    });
+
+    renderRecentQueries();
+    loadReports();
+    updateProgress(0, 'idle');
+
+    const initialQuery = new URL(window.location.href).searchParams.get('query');
+    const initialRunMode = new URL(window.location.href).searchParams.get('run_mode');
+    if (initialRunMode && ['fast', 'balanced', 'deep'].includes(initialRunMode)) {
+      runModeInput.value = initialRunMode;
+    }
+    if (initialQuery) {
+      queryInput.value = initialQuery;
+      runSearch(initialQuery);
+    }
+  </script>
+</body>
+</html>

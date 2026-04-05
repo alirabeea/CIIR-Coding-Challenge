@@ -1,0 +1,65 @@
+{
+  "query": "open source database tools",
+  "query_type": "open_source",
+  "comparison_fields": [
+    "license_type",
+    "primary_language"
+  ],
+  "columns": [
+    "name",
+    "entity_type",
+    "summary",
+    "homepage",
+    "license_type"
+  ],
+  "rows": [
+    {
+      "entity_id": "metabase",
+      "name": {
+        "value": "Metabase",
+        "sources": []
+      },
+      "entity_type": {
+        "value": "software tool",
+        "sources": []
+      },
+      "summary": {
+        "value": "Open-source analytics platform.",
+        "sources": []
+      },
+      "homepage": {
+        "value": "https://www.metabase.com/",
+        "sources": []
+      },
+      "attributes": {
+        "license_type": {
+          "value": "Open source",
+          "sources": []
+        }
+      },
+      "supporting_source_count": 2,
+      "aggregate_score": 0.93,
+      "confidence_score": 0.88,
+      "provenance_score": 0.72,
+      "ranking_signals": {},
+      "highlights": [
+        "Official homepage identified"
+      ]
+    }
+  ],
+  "raw_sources_considered": 4,
+  "metrics": {
+    "cache_hit": false,
+    "cache_tier": "live",
+    "search_ms": 120,
+    "rerank_ms": 2,
+    "scrape_ms": 640,
+    "extract_ms": 1400,
+    "merge_ms": 9,
+    "total_ms": 2171,
+    "hits_returned": 6,
+    "pages_considered": 4,
+    "chunks_processed": 4,
+    "fallback_rows_added": 0
+  }
+}
